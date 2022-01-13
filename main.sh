@@ -74,7 +74,7 @@ function create_compare_graph()
 {
     # ici $1:"Countries" | $2:pays 1 | $3:pays 2
     # parametres de gnuplot (config + plotting)
-    local new_dir="$2_$3"
+    local new_dir="$2_$3"   # nom nouveau dossier (pays1_pays2)
 
     # ordre pays passés en paramètre : pas nécessairement ordre dans csv
     local fst_country=`head -1 Resultats/$1/Comparaison/"$new_dir"/conso.csv | cut -d',' -f2`
@@ -88,11 +88,31 @@ function create_compare_graph()
     set xlabel \"Année\";
     set ylabel \"Consommation énergétique (TWH)\";
     set title \"Comparaison conso annuelle $2 - $3\";
-    plot \"Resultats/$1/Comparaison/$new_dir/conso.csv\" u 1:2 w l title \"$fst_country\", 
-    \"Resultats/$1/Comparaison/$new_dir/conso.csv\" u 1:3 w l title \"$scd_country\"" # plot deux courbes --- A COMPLETER ---
+    plot \"Resultats/$1/Comparaison/$new_dir/conso.csv\" u 1:2 w l title \"$fst_country\",
+    \"Resultats/$1/Comparaison/$new_dir/conso.csv\" u 1:3 w l title \"$scd_country\""
 
     # Annoncer emplacement
     echo "Données (conso.csv) et graphique (conso.png) dans : [ Resultats/$1/Comparaison/$new_dir ]"
+}
+
+function world_repartition_graph()
+{
+    gnuplot -e "reset;
+    set autoscale fix;
+    set terminal png;
+    set output \"Resultats/World_repartition/conso.png\";
+    set datafile separator \",\";
+    set xlabel \"Mode de génération\";
+    set ylabel \"Production (TWH)\";
+    set title \"Production par type d'énergie\";
+    set xtics nomirror scale 0;
+    set style data histogram;
+    set style fill solid border -1;
+    set boxwidth 1;
+    plot \"<(head -n 8 sources/nonRenewablesTotalPowerGeneration.csv)\" u 2:xtic(1) notitle"
+
+    # Annoncer emplacement
+    echo "Graphique (conso.png) dans : [ Resultats/World_repartition ]"
 }
 
 function afficher_aide()
@@ -110,7 +130,7 @@ function afficher_aide()
 }
 
 
-if [[ "$1" = "--Continent" ]] || [[ "$1" = "-C" ]]; then 
+if [[ "$1" = "--Continent" ]] || [[ "$1" = "-C" ]]; then
     if [[ $2 ]]; then
         if [[ ! -d Resultats/Continents/"$2" ]]; then
             get_conso "Continents" "$2" "Continent_Consumption_TWH.csv"
@@ -158,9 +178,14 @@ elif [[ "$1" = "--Country" ]] || [[ "$1" = "-c" ]]; then
         echo "$1 : attend au moins un paramètre."
         echo "Tapez [ ./main.sh -h ] ou [ ./main.sh --help ] pour plus d'informations."
     fi
+elif [[ "$1" = "--World_repartition" ]] || [[ "$1" = "-W" ]]; then
+    if [[ ! -d Resultats/World_repartition ]]; then
+        mkdir -p Resultats/World_repartition
+    fi
+    world_repartition_graph
 elif [[ "$1" = "-h" ]] || [[ "$1" = "--help" ]]; then
     afficher_aide
-else 
+else
     # si paramètre incorrect (inconnu)
     echo "$1 : paramètre inconnu."
     echo "Tapez [ ./main.sh -h ] ou [ ./main.sh --help ] pour plus d'informations."
