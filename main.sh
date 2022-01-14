@@ -120,62 +120,65 @@ function world_repartition_graph()
 function afficher_aide()
 {
     echo "Utilisation : ./main.sh [OPTION] ..."
-    echo "  -C, --Continent   <nom_continent>               : créer 'conso.csv' + 'conso.png' (graph) correspondant au continent"
-    echo "  -c, --Country     <nom_pays>                    : créer 'conso.csv' + 'conso.png' (graph) correspondant au pays"
-    echo "                  | --Compare <pays_1> <pays_2>   : créer 'conso.csv' + 'conso.png' (graph) comparant 'pays_1' et 'pays_2'"
-    echo "                  | --max_renouv                  : retourner pays qui produit le plus d'énergie renouvelable"
-    echo "                  | --max_non_renouv              : retourner pays qui produit le plus d'énergie non renouvelable"
     echo ""
-    echo "  -h, --help                                      : afficher manuel d'utilisation"
+    echo "  -W, --World_repartition                             : graph production énergie renouv. par type d'énergie"
+    echo "  -C, --Continent         <nom_continent>             : créer csv + graph pour <nom_continent>"
+    echo "  -c, --Country           <nom_pays>                  : créer csv + graph pour <nom_pays>"
+    echo "                        | --Compare <pays_1> <pays_2> : créer csv + graph comparant <pays_1> <pays_2>"
+    echo "                        | --max_renouv                : retourner pays qui produit le plus d'énergie renouvelable"
+    echo "                        | --max_non_renouv            : retourner pays qui produit le plus d'énergie non renouvelable"
+    echo "  -h, --help                                          : afficher manuel d'utilisation"
+    echo ""
     echo ""
     echo "2022 | Louis Travaux | Edouard Calzado"
 }
 
 
-if [[ "$1" = "--Continent" ]] || [[ "$1" = "-C" ]]; then                                # si 
-    if [[ $2 ]]; then                                                                   # si un paramètre est précisé
-        if [[ ! -d Resultats/Continents/"$2" ]]; then                                   # vérification si dossier existe déjà
+if [[ "$1" = "--Continent" ]] || [[ "$1" = "-C" ]]; then                            # si Continent
+    if [[ $2 ]]; then                                                               # si le continent est précisé
+        if [[ ! -d Resultats/Continents/"$2" ]]; then                               # si dossier n'existe pas
             get_conso "Continents" "$2" "Continent_Consumption_TWH.csv"
-        else                                                                            # sinon, si le dossier existe déjà (on ne fait rien)
+        else                                                                        # sinon, si le dossier existe déjà (on ne fait rien)
             echo "[ $2 ] : le dossier existe déjà, supprimez-le puis réessayez."
         fi
-    else                                                                                # si paramètre manquant
+    else                                                                            # si le continent n'est pas précisé
         echo "$1 : attend un paramètre."
         echo "Tapez [ ./main.sh -h ] ou [ ./main.sh --help ] pour plus d'informations."
     fi
-elif [[ "$1" = "--Country" ]] || [[ "$1" = "-c" ]]; then
-    if [[ $2 ]]; then
+elif [[ "$1" = "--Country" ]] || [[ "$1" = "-c" ]]; then                            # si Pays
+    if [[ $2 ]]; then                                                               # s'il y a un deuxième paramètre
         case "$2" in
             "--max_renouv")
                 # pays qui produit le plus energie renouv
                 pays=`sort -t',' -k6rn sources/top20CountriesPowerGeneration.csv | head -1 | cut -d',' -f1`
                 conso=`sort -t',' -k6rn sources/top20CountriesPowerGeneration.csv | head -1 | cut -d',' -f6`
-                result=`echo "$pays : $conso" | tr -d '\r'`     # necessaire pour pas réécrire 'TWh' par dessus 'China'
+                result=`echo "$pays : $conso" | tr -d '\r'`                         # necessaire pour pas réécrire 'TWh' par dessus 'China'
                 echo "$result TWh"
                 ;;
             "--max_non_renouv")
                 # pays qui produit le plus energie NON renouv (plutot 'le moins energie renouv, mais accepté...')
                 pays=`sort -t',' -k6rn sources/top20CountriesPowerGeneration.csv | tail -2 | head -1 | cut -d',' -f1`
                 conso=`sort -t',' -k6rn sources/top20CountriesPowerGeneration.csv | tail -2 | head -1 | cut -d',' -f6`
-                result=`echo "$pays : $conso" | tr -d '\r'`     # necessaire pour pas réécrire 'TWh' par dessus 'China'
+                result=`echo "$pays : $conso" | tr -d '\r'`                         # necessaire pour pas réécrire 'TWh' par dessus 'China'
                 echo "$result TWh"
                 ;;
             "--Compare")
-                if [[ $3 ]] && [[ $4 ]]; then                                                                       # verifier si dossier deja existant
-                    if [[ ! -d Resultats/Countries/Comparaison/"$3"_"$4"/ ]];then
+                # comparer deux Pays
+                if [[ $3 ]] && [[ $4 ]]; then                                       # si les deux Pays a comparer sont bien précisés
+                    if [[ ! -d Resultats/Countries/Comparaison/"$3"_"$4"/ ]];then   # si dossier n'existe pas
                         compare_conso "Countries" "$3" "$4" "Country_Consumption_TWH.csv"
-                    else
+                    else                                                            # sinon, si dossier existe déjà
                         echo "[ $3_$4 ] : le dossier existe déjà, supprimez-le puis réessayez."
                     fi
-                else                                                                                                # si paramètre manquant
+                else                                                                # si un Pays (ou les deux) n'est (ne sont) pas précisé(s)
                     echo "$2 : attend exactement deux paramètres (<pays_1> et <pays_2>)."
                     echo "Tapez [ ./main.sh -h ] ou [ ./main.sh --help ] pour plus d'informations."
                 fi
                 ;;
-            *)
-                if [[ ! -d Resultats/Countries/"$2" ]]; then
+            *)                                                                      # sinon, obtenir data + grapher le pays précisé (existance pays vérifiée plus tard)
+                if [[ ! -d Resultats/Countries/"$2" ]]; then                        # si le répertoire n'existe pas
                     get_conso "Countries" "$2" "Country_Consumption_TWH.csv"
-                else                                                                            # sinon, si le dossier existe déjà (on ne fait rien)
+                else                                                                # sinon, si le dossier existe déjà (on ne fait rien)
                     echo "[ $2 ] : le dossier existe déjà, supprimez-le puis réessayez."
                 fi
             ;;
@@ -185,17 +188,20 @@ elif [[ "$1" = "--Country" ]] || [[ "$1" = "-c" ]]; then
         echo "$1 : attend au moins un paramètre."
         echo "Tapez [ ./main.sh -h ] ou [ ./main.sh --help ] pour plus d'informations."
     fi
-elif [[ "$1" = "--World_repartition" ]] || [[ "$1" = "-W" ]]; then                          # afficher graphique de répartition des production d'energie (selon type)
-    if [[ ! -d Resultats/World_repartition ]]; then
+elif [[ "$1" = "--World_repartition" ]] || [[ "$1" = "-W" ]]; then                  # afficher graphique de répartition des production d'energie (selon type)
+    if [[ ! -d Resultats/World_repartition ]]; then                                 # si dossier n'existe pas on le créée
         mkdir -p Resultats/World_repartition
+        world_repartition_graph
+    else                                                                            # sinon, si le dossier existe déjà
+        echo "[ World_repartition ] : le dossier existe déjà, supprimez-le puis réessayez."
     fi
-    world_repartition_graph
-elif [[ "$1" = "-h" ]] || [[ "$1" = "--help" ]]; then                                       # [-h] / [--help] afficher l'aide
+elif [[ "$1" = "-h" ]] || [[ "$1" = "--help" ]]; then                               # [-h] / [--help] afficher l'aide
     afficher_aide
-elif [[ ! $1 ]]; then                                                                       # si aucun parametre
+elif [[ ! $1 ]]; then                                                               # si aucun parametre
     echo ""
     echo "      - - - - - - - - - - - - -"
     echo "       P R O J E T  S H E L L"
+    echo "       v1.0           01-2022"                                            # (faut bien s'amuser)
     echo "      - - - - - - - - - - - - -"
     echo ""
     echo "2022 | Louis Travaux | Edouard Calzado"
@@ -203,7 +209,7 @@ elif [[ ! $1 ]]; then                                                           
     echo ""
     echo "Précisez un paramètre pour utiliser ce script."
     echo "Tapez [ ./main.sh -h ] ou [ ./main.sh --help ] pour plus d'informations."
-else                                                                                        # si paramètre incorrect (inconnu)
+else                                                                                # si paramètre incorrect (inconnu)
     echo "$1 : paramètre inconnu."
     echo "Tapez [ ./main.sh -h ] ou [ ./main.sh --help ] pour plus d'informations."
 fi
