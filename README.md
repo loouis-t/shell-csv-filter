@@ -36,7 +36,7 @@ Ce script permet de trier et sélectionner des données au format csv (contenues
     ```
     ./main.sh --Country --max_non_renouv                (ou -c --max_non_renouv)
     ```
-    - Afficher aide
+    - Afficher l'aide
     ```
     ./main.sh --help                                    (ou -h)
     ```
