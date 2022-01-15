@@ -14,7 +14,7 @@ Ce script permet de trier et sélectionner des données au format csv (contenues
 - **Options**
     - Générer un histogramme de la production d'énergie selon le type (hydroélectrique, solaire, ...)
     ```
-    ./main.sh --World_repartition                       (ou -W)
+    ./main.sh --World-repartition                       (ou -W)
     ```
     - Générer .csv + graphique de l'évolution de la consommation annuelle d'énergie de 1990 à 2020 pour ```<nom_continent>```
     ```
@@ -30,11 +30,11 @@ Ce script permet de trier et sélectionner des données au format csv (contenues
     ```
     - Afficher le pays qui produit le plus d'énergie *renouvelable*
     ```
-    ./main.sh --Country --max_renouv                    (ou -c --max_renouv)
+    ./main.sh --Country --max-renouv                    (ou -c --max-renouv)
     ```
     - Afficher le pays qui produit le plus d'énergie *non renouvelable*
     ```
-    ./main.sh --Country --max_non_renouv                (ou -c --max_non_renouv)
+    ./main.sh --Country --max-non-renouv                (ou -c --max-non-renouv)
     ```
     - Afficher l'aide
     ```

@@ -58,9 +58,9 @@ function create_graph()
     set xlabel \"Année\";
     set ylabel \"Consommation énergétique (TWH)\";
     set title \"Consommantion annuelle de : $2\";
-    set style line 1 lw 2 pi -1;
+    set style line 1 lw 2 lt 2 pi -1;
     set pointintervalbox 2;
-    plot \"Resultats/$1/$2/conso.csv\" u 1:2 w linespoint ls 1 lt 2 title \"$2\""
+    plot \"Resultats/$1/$2/conso.csv\" u 1:2 w linespoint ls 1 title \"$2\""
     # ls : line style | lt : couleur | lw : line width | pi : cercle autour des points (espace pt-courbe)
 
     echo "Données (conso.csv) et graphique (conso.png) dans : [ Resultats/$1/$2 ]"  # Annoncer emplacement
@@ -95,7 +95,7 @@ function create_compare_graph()
     echo "Données (conso.csv) et graphique (conso.png) dans : [ Resultats/$1/Comparaison/$new_dir ]"    # Annoncer emplacement
 }
 
-# repartition production énergie selon type ([--World_repartition] / [-W])
+# repartition production énergie selon type ([--World-repartition] / [-W])
 function world_repartition_graph()
 {
     gnuplot -e "reset;
@@ -104,7 +104,7 @@ function world_repartition_graph()
     set datafile separator \",\";
     set xlabel \"Type d'énergie\";
     set ylabel \"Production (TWH)\";
-    set title \"Production par type d'énergie\";
+    set title \"Production d'énergie renouvelable par type d'énergie\";
     set xtics nomirror rotate by -45 scale 0;
     set style data histogram;
     set style fill solid border -1;
@@ -121,12 +121,12 @@ function afficher_aide()
 {
     echo "Utilisation : ./main.sh [OPTION] ..."
     echo ""
-    echo "  -W, --World_repartition                             : graph production énergie renouv. par type d'énergie"
+    echo "  -W, --World-repartition                             : graph production énergie renouv. par type d'énergie"
     echo "  -C, --Continent         <nom_continent>             : créer csv + graph pour <nom_continent>"
     echo "  -c, --Country           <nom_pays>                  : créer csv + graph pour <nom_pays>"
     echo "                        | --Compare <pays_1> <pays_2> : créer csv + graph comparant <pays_1> <pays_2>"
-    echo "                        | --max_renouv                : retourner pays qui produit le plus d'énergie renouvelable"
-    echo "                        | --max_non_renouv            : retourner pays qui produit le plus d'énergie non renouvelable"
+    echo "                        | --max-renouv                : retourner pays qui produit le plus d'énergie renouvelable"
+    echo "                        | --max-non-renouv            : retourner pays qui produit le plus d'énergie non renouvelable"
     echo "  -h, --help                                          : afficher manuel d'utilisation"
     echo ""
     echo ""
@@ -148,14 +148,14 @@ if [[ "$1" = "--Continent" ]] || [[ "$1" = "-C" ]]; then                        
 elif [[ "$1" = "--Country" ]] || [[ "$1" = "-c" ]]; then                            # si Pays
     if [[ $2 ]]; then                                                               # s'il y a un deuxième paramètre
         case "$2" in
-            "--max_renouv")
+            "--max-renouv")
                 # pays qui produit le plus energie renouv
                 pays=`sort -t',' -k6rn sources/top20CountriesPowerGeneration.csv | head -1 | cut -d',' -f1`
                 conso=`sort -t',' -k6rn sources/top20CountriesPowerGeneration.csv | head -1 | cut -d',' -f6`
                 result=`echo "$pays : $conso" | tr -d '\r'`                         # necessaire pour pas réécrire 'TWh' par dessus 'China'
                 echo "$result TWh"
                 ;;
-            "--max_non_renouv")
+            "--max-non-renouv")
                 # pays qui produit le plus energie NON renouv (plutot 'le moins energie renouv, mais accepté...')
                 pays=`sort -t',' -k6rn sources/top20CountriesPowerGeneration.csv | tail -2 | head -1 | cut -d',' -f1`
                 conso=`sort -t',' -k6rn sources/top20CountriesPowerGeneration.csv | tail -2 | head -1 | cut -d',' -f6`
@@ -165,7 +165,7 @@ elif [[ "$1" = "--Country" ]] || [[ "$1" = "-c" ]]; then                        
             "--Compare")
                 # comparer deux Pays
                 if [[ $3 ]] && [[ $4 ]]; then                                       # si les deux Pays a comparer sont bien précisés
-                    if [[ ! -d Resultats/Countries/Comparaison/"$3"_"$4"/ ]];then   # si dossier n'existe pas
+                    if [[ ! -d Resultats/Countries/Comparaison/"$3"_"$4"/ ]] && [[ ! -d Resultats/Countries/Comparaison/"$4"_"$3"/ ]];then   # si dossier n'existe pas (tenir compte ordre)
                         compare_conso "Countries" "$3" "$4" "Country_Consumption_TWH.csv"
                     else                                                            # sinon, si dossier existe déjà
                         echo "[ $3_$4 ] : le dossier existe déjà, supprimez-le puis réessayez."
@@ -188,7 +188,7 @@ elif [[ "$1" = "--Country" ]] || [[ "$1" = "-c" ]]; then                        
         echo "$1 : attend au moins un paramètre."
         echo "Tapez [ ./main.sh -h ] ou [ ./main.sh --help ] pour plus d'informations."
     fi
-elif [[ "$1" = "--World_repartition" ]] || [[ "$1" = "-W" ]]; then                  # afficher graphique de répartition des production d'energie (selon type)
+elif [[ "$1" = "--World-repartition" ]] || [[ "$1" = "-W" ]]; then                  # afficher graphique de répartition des production d'energie (selon type)
     if [[ ! -d Resultats/World_repartition ]]; then                                 # si dossier n'existe pas on le créée
         mkdir -p Resultats/World_repartition
         world_repartition_graph
